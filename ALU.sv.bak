@@ -1,0 +1,35 @@
+module ALU 
+(
+)
+#(
+	input clk,
+	input rst_n,
+	input instr,
+	
+)
+
+
+
+	always_comb
+	begin
+		case opcode
+			ALU_ADD:   alu_result_d = add_result;
+			ALU_SUB:   alu_result_d = sub_result;
+			ALU_AND:   alu_result_d = and_result;
+			ALU_OR:    alu_result_d = or_result;
+			ALU_XOR:   alu_result_d = xor_result;
+			ALU_DIV:   alu_result_d = div_result;
+			ALU_REM:   alu_result_d = rem_result;
+			ALU_MULH:  alu_result_d = mul_result[ALU_WIDTH*2-1:ALU_WIDTH]; 
+			ALU_MULL:  alu_result_d = mul_result[ALU_WIDTH-1:0];  
+			ALU_SLT:   alu_result_d = slt_result;
+			ALU_SLTU:  alu_result_d = sltu_result;
+			ALU_SHL:   alu_result_d = shl_result;
+			ALU_SHR:   alu_result_d = shr_result;
+			ALU_NPC:   alu_result_d = npc_result;
+			ALU_AUIPC: alu_result_d = auipc_result;
+			default:   alu_result_d = 'd0;
+	
+	end
+
+

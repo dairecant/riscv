@@ -1,0 +1,22 @@
+module IDecode
+#(
+		I_WIDTH=32
+	)
+	(
+		input clk,
+		input rst_n,
+		input [I_WIDTH-1:0] instruction,
+		output [6:0]		  opcode,
+		output [4:0]		  rd,
+		output [2:0]		  f3,
+		output [4:0]		  rs1,
+		output [4:0]		  rs2,
+		output [11:0]		  imm,
+		output [6:0]		  imm,
+		output              ALUinstr,
+		output              branchValid,
+		output              memWr,
+		output              memRd,
+		output              regLd,
+		output              regStr		
+	);
