@@ -13,14 +13,14 @@ module IM
 
 	
 	//Memory generation
-	logic [(IMem_SIZE/4)-1:0] IMem[I_WIDTH-1:0];
+	logic [(IMEM_SIZE>>2)-1:0] IMem[I_WIDTH-1:0];
 	integer i;
 	
 	always @(posedge clk or negedge rst_n)
 		begin
 			if(~rst_n)
 			begin
-				for(i=0; i < (IMem_SIZE/4); i=i+1)
+				for(i=0; i < (IMEM_SIZE/4); i=i+1)
 				begin
 					IMem[i] <= 'd0;
 				end

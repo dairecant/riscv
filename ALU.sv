@@ -1,15 +1,16 @@
 module ALU 
 #(
-	parameter OPCODE_WIDTH=7,
 	parameter ALU_WIDTH=32
 )
 (
 	input 						  clk,
 	input 						  rst_n,
 	input 						  opcodeValid,
-	input  [OPCODE_WIDTH-1:0] opcode,
-   input [ALU_WIDTH-1:0]	  raIn,
-   input [ALU_WIDTH-1:0]	  rbIn,		
+	input  [7-1:0] 			  opcode,
+	input  [4-1:0] 			  f3,
+	input  [12-1:0]			  imm,
+   input [ALU_WIDTH-1:0]	  rs1,
+   input [ALU_WIDTH-1:0]	  rs2,		
 	output [ALU_WIDTH-1:0]	  aluOut
 	
 );
@@ -17,93 +18,255 @@ module ALU
 	logic [ALU_WIDTH-1 : 0] alu_result_d;
 	logic [ALU_WIDTH-1 : 0] alu_result_q;
 	
+	/***********RV32I ALU Instructions Decodde***************/
 	
-/****************************************************************************/
-//Adder
-/****************************************************************************/
+	//I Type
+	parameter ALU_I_OP  = 7'b0010011;
+	enum bit[2:0] {ADDI,SLLI,SLTI,SLTIU,XORI,SRLI_SRAI,ORI,ANDI} alu_i_ops;    
 
-
-		logic [ALU_WIDTH-1 : 0] add_carryIn;
-		logic [ALU_WIDTH-1 : 0] add_carryOut;
-		logic [ALU_WIDTH   : 0] adderOutFull;		
-		logic [ALU_WIDTH-1 : 0] adderOut;
-
-		assign adderOutFull = raIn + rbIn + add_carryIn;
-		
-		
-
-/****************************************************************************/
-//Subtractor
-/****************************************************************************/
-
-
-/****************************************************************************/
-//Logical ops
-/****************************************************************************/
-
-	logic [ALU_WIDTH-1:0] a_or_b;
-	logic [ALU_WIDTH-1:0] a_and_b;
-	logic [ALU_WIDTH-1:0] a_xor_b;
 	
 	
-	assign a_or_b =  raIn | rbIn;
-	assign a_and_b = raIn & rbIn;
-	assign a_xor_b = raIn ^ rbIn;
+	/****R Type****/
+	parameter ALU_R_OP  = 7'b0110011;	
+//	logic [5-1:0] rs2;
+	logic [7-1:0] f7;
+	
+	enum bit[2:0] {ADD_SUB,SLL,SLT, SLTU,XOR,SRL_SRA,OR,AND} alu_r_ops;
+	
+	//RV32M ALU Instructions
+	logic alu_m_op;
+	enum bit[2:0] {MUL,MULH,MULHSU,MULHU,DIV,DIVU,REM,REMU} alu_m_ops;    
+	
+	always_comb
+	begin
+		if(opcode == ALU_R_OP)
+		begin
+	//		rs2 =  imm[4:0];
+			f7 =   imm[11:5];
+		end
+		else
+		begin
+			f7  = '0;
+	//		rs2 = '0;
+		end
+	end
+	assign alu_m_op = f7[0];
+	
+
+
+
 
 /****************************************************************************/
 //Multiplier
 /****************************************************************************/
-
+	logic [ALU_WIDTH*2-1:0] mul_res;
+	logic [ALU_WIDTH-1 : 0] mulInA, mulInB;
+	
+	always_comb
+	begin
+		if(alu_m_op & (opcode == ALU_R_OP))	
+		begin
+			case(f3)
+			{MUL,MULHU}:    
+				begin
+					mulInA = rs1;
+					mulInB = rs2;
+				end
+			MULH:  
+				begin
+					mulInA = $signed(rs1);
+					mulInB = $signed(rs2);
+				end			
+			MULHSU: 
+				begin
+					mulInA = $signed(rs1);
+					mulInB = rs2;
+				end			   			
+			default:
+				begin
+					mulInA = '0;
+					mulInB = '0;
+				end
+			endcase
+		end
+		else 
+		begin
+			mulInA = '0;
+			mulInB = '0;		
+		end
+	end
+	assign mul_res = mulInA * mulInB;
 
 /****************************************************************************/
 //Divider
 /****************************************************************************/
+	logic [ALU_WIDTH*2-1:0] div_res;
+	logic [ALU_WIDTH-1 : 0] divInA, divInB;
 
+	always_comb
+	begin
+			if(alu_m_op & (opcode == ALU_R_OP))
+			begin
+				case(f3)
+
+					DIV:     
+						begin
+							divInA = $signed(rs1);
+							divInB = $signed(rs2);							
+						end
+					DIVU:
+						begin
+							divInA = rs1;
+							divInB = rs2;
+						end
+					default:
+						begin
+							divInA = '0;
+							divInB = '0;
+						end					
+				endcase
+			end
+			else
+			begin
+				divInA = '0;
+				divInB = '0;			
+			end
+				
+		end
+	
+	assign div_res = divInA / divInB;
 
 /****************************************************************************/
 //Remainder
 /****************************************************************************/
 
+	logic [ALU_WIDTH-1:0] rem_res;
+	logic [ALU_WIDTH-1 : 0] remInA, remInB;
 
+		always_comb
+		begin
+			if(alu_m_op & (opcode == ALU_R_OP))
+			begin
+				case(f3)
 
-/****************************************************************************/
-//Shift Left
-/****************************************************************************/
-
-
-
-
-/****************************************************************************/
-//Shift Right
-/****************************************************************************/
-
+					REM:     
+						begin
+							remInA = $signed(rs1);
+							remInB = $signed(rs2);							
+						end
+					REMU:
+						begin
+							remInA = rs1;
+							remInB = rs2;
+						end
+					default:
+						begin
+							remInA = '0;
+							remInB = '0;
+						end					
+				endcase
+			end
+			else
+			begin
+				remInA = '0;
+				remInB = '0;
+			end			
+		end
+	
+	assign rem_res = remInA % remInB;
 
 
 
 /****************************************************************************/
 //ALU Output Decode
 /****************************************************************************/
-	always_comb
+
+always_comb
+begin
+	if (opcode==ALU_I_OP)
 	begin
-		case (opcode)
-			ALU_ADD:   alu_result_d = add_result;
-			ALU_SUB:   alu_result_d = sub_result;
-			ALU_AND:   alu_result_d = and_result;
-			ALU_OR:    alu_result_d = or_result;
-			ALU_XOR:   alu_result_d = xor_result;
-			ALU_DIV:   alu_result_d = div_result;
-			ALU_REM:   alu_result_d = rem_result;
-			ALU_MULH:  alu_result_d = mul_result[ALU_WIDTH*2-1:ALU_WIDTH]; 
-			ALU_MULL:  alu_result_d = mul_result[ALU_WIDTH-1:0];  
-			ALU_SLT:   alu_result_d = slt_result;
-			ALU_SLTU:  alu_result_d = sltu_result;
-			ALU_SHL:   alu_result_d = shl_result;
-			ALU_SHR:   alu_result_d = shr_result;
-			ALU_NPC:   alu_result_d = npc_result;
-			ALU_AUIPC: alu_result_d = auipc_result;
-			default:   alu_result_d = 'd0;	
+		case(f3)
+			ADDI:      alu_result_d = rs1 + $signed(imm); //overflow ignored	in rv32i		
+			SLLI:      alu_result_d = rs1 << imm[4:0];
+			SLTI:      alu_result_d = ($signed(imm) > rs1)? 1 : '0; //set rd to 1
+			SLTIU:     alu_result_d = (imm > rs1)? 1 : '0;
+			XORI:      alu_result_d = rs1 ^ $signed(imm);
+			SRLI_SRAI: 
+				begin
+					if(imm[10]) //shift right arithmetic
+					begin
+						alu_result_d = rs1 >>> imm[4:0];
+					end
+					else //shift right logical
+					begin
+						alu_result_d = rs1 >> imm[4:0];						
+					end
+				end
+			ORI:       alu_result_d = rs1 | $signed(imm);
+			ANDI:      alu_result_d = rs1 & $signed(imm);
+			default:   alu_result_d = '0;
 		endcase
 	end
+	else if(opcode==ALU_R_OP)
+	begin
+			if(alu_m_op)
+			begin
+				case(f3)
+					MUL:     alu_result_d = mul_res[ALU_WIDTH-1:0];
+					MULH:    alu_result_d = mul_res[ALU_WIDTH*2-1:ALU_WIDTH];
+					MULHSU:  alu_result_d = mul_res[ALU_WIDTH*2-1:ALU_WIDTH];
+					MULHU:   alu_result_d = mul_res[ALU_WIDTH*2-1:ALU_WIDTH];
+					DIV:     alu_result_d = div_res[ALU_WIDTH*2-1:ALU_WIDTH];
+					DIVU:    alu_result_d = div_res[ALU_WIDTH*2-1:ALU_WIDTH];
+					REM:     alu_result_d = rem_res;
+					REMU:    alu_result_d = rem_res;
+					default: alu_result_d ='0;
+				endcase
+			end
+			else begin
+					case(f3)
+						ADD_SUB: 
+							begin
+								if(f7[5])
+								begin
+									alu_result_d = rs2 - rs1; //overflow ignored in rv32i
+								end
+								else
+								begin
+									alu_result_d = rs1 + rs2; //overflow ignored	in rv32i						
+								end
+							
+							end
+						SLL:     alu_result_d = rs1 << rs2;
+						SLT:     alu_result_d = ($signed(rs2) > rs1)? 1 : 0;
+						SLTU:    alu_result_d = (rs2 > rs1)? 1 : 0;
+						XOR:     alu_result_d = rs1 ^ rs2;
+						SRL_SRA: 
+								begin
+									if(f7[5])
+									begin
+										alu_result_d = rs1 >>> rs2; //arithmetic right shift	
+									end
+									else
+									begin
+										alu_result_d = rs1 >> rs2; //logical right shift					
+									end
+								end
+						OR:      alu_result_d = rs1 | rs2;
+						AND:     alu_result_d = rs1 & rs2;
+						default: alu_result_d = '0;
+					endcase
+			end			
+		end
+		else
+		begin
+			alu_result_d = '0;
+		end
+	end
+
+
+
+
 
 	always@(posedge clk or negedge rst_n)
 	begin
@@ -117,6 +280,6 @@ module ALU
 		end
 	end
 	
-	assign WBDat = alu_result_q;
+	assign aluOut = alu_result_q;
 
 endmodule
