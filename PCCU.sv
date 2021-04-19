@@ -12,6 +12,7 @@ module PCCU #(
 (
 	input  logic 					 clk,
 	input  logic 					 rst_n,
+	input  logic                go,
 	input  logic 					 selPCsrc,
 	input  logic [PC_WIDTH-1:0] branchIn,
 	output logic [PC_WIDTH-1:0] PC
@@ -23,14 +24,21 @@ module PCCU #(
 	
 	always_comb
 	begin
-		if(selPCsrc)
-			begin
-				nextPC = branchIn;
-			end 
+		if(go)
+		begin
+			if(selPCsrc)
+				begin
+					nextPC = branchIn;
+				end 
+			else
+				begin
+					nextPC = PCAdd4;
+				end
+		end
 		else
-			begin
-				nextPC = PCAdd4;
-			end	
+		begin
+			nextPC = PC;
+		end
 	end
 
 	assign PCAdd4 = PC + 'd4;

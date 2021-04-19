@@ -1,0 +1,33 @@
+`timescale 1ns / 1ps
+module risv_imem_tb();
+
+parameter FREQ            = 50000000;
+parameter PERIOD          = (1/FREQ)/0.000000001; 
+parameter CLK_HALF_PERIOD = PERIOD/2;
+
+logic clk_tb,rst_n_tb,en_n_tb;
+riscVDat instruction_tb,PC_tb;
+
+riscv_core dut(	
+						.clk(clk_tb),
+						.rst_n(rst_n_tb),
+						.instruction(instruction_tb),
+						.pc1(PC_tb)
+
+					);
+
+initial
+	begin
+		clk_tb = '0;
+		forever
+			begin
+				clk_tb = #(CLK_HALF_PERIOD) ~clk_tb;
+			end
+	end
+					
+initial 
+	begin
+	
+	
+	end
+endmodule

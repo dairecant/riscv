@@ -1,3 +1,4 @@
+import riscv_pkg::*;
 module ALU 
 #(
 	parameter ALU_WIDTH=32
@@ -24,7 +25,7 @@ module ALU
 	parameter ALU_I_OP  = 7'b0010011;
 	enum bit[2:0] {ADDI,SLLI,SLTI,SLTIU,XORI,SRLI_SRAI,ORI,ANDI} alu_i_ops;    
 
-	
+
 	
 	/****R Type****/
 	parameter ALU_R_OP  = 7'b0110011;	
@@ -59,6 +60,14 @@ module ALU
 /****************************************************************************/
 //Multiplier
 /****************************************************************************/
+	rs_type rs1SU;
+	rs_type rs2SU;
+	
+	assign rs1SU.rsu = rs1;
+	assign rs1SU.rs  = $signed(rs1);
+	assign rs2SU.rsu = rs2;
+	assign rs2SU.rs  = $signed(rs2);
+	
 	logic [ALU_WIDTH*2-1:0] mul_res;
 	logic [ALU_WIDTH-1 : 0] mulInA, mulInB;
 	
@@ -74,12 +83,12 @@ module ALU
 				end
 			MULH:  
 				begin
-					mulInA = $signed(rs1);
-					mulInB = $signed(rs2);
+					mulInA = rs1SU.rs;
+					mulInB = rs2SU.rs;
 				end			
 			MULHSU: 
 				begin
-					mulInA = $signed(rs1);
+					mulInA = rs1SU.rs;
 					mulInB = rs2;
 				end			   			
 			default:
@@ -111,8 +120,8 @@ module ALU
 
 					DIV:     
 						begin
-							divInA = $signed(rs1);
-							divInB = $signed(rs2);							
+							divInA = rs1SU.rs;
+							divInB = rs2SU.rs;							
 						end
 					DIVU:
 						begin
@@ -151,8 +160,8 @@ module ALU
 
 					REM:     
 						begin
-							remInA = $signed(rs1);
-							remInB = $signed(rs2);							
+							remInA = rs1SU.rs;
+							remInB = rs2SU.rs;						
 						end
 					REMU:
 						begin

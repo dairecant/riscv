@@ -1,0 +1,36 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate D:\Code_Projects\riscv\riscv\imem.qsys --block-symbol-file --output-directory=D:\Code_Projects\riscv\riscv\imem --family="MAX 10" --part=10M50DAF484C6GES
+Progress: Loading riscv/imem.qsys
+Progress: Reading input file
+Progress: Adding clk_0 [clock_source 18.1]
+Progress: Parameterizing module clk_0
+Progress: Adding onchip_memory2_0 [altera_avalon_onchip_memory2 18.1]
+Progress: Parameterizing module onchip_memory2_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate D:\Code_Projects\riscv\riscv\imem.qsys --synthesis=VERILOG --output-directory=D:\Code_Projects\riscv\riscv\imem\synthesis --family="MAX 10" --part=10M50DAF484C6GES
+Progress: Loading riscv/imem.qsys
+Progress: Reading input file
+Progress: Adding clk_0 [clock_source 18.1]
+Progress: Parameterizing module clk_0
+Progress: Adding onchip_memory2_0 [altera_avalon_onchip_memory2 18.1]
+Progress: Parameterizing module onchip_memory2_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: imem: Generating imem "imem" for QUARTUS_SYNTH
+Info: onchip_memory2_0: Starting RTL generation for module 'imem_onchip_memory2_0'
+Info: onchip_memory2_0:   Generation command is [exec C:/intelfpga_lite/18.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/18.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/18.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/18.1/quartus/sopc_builder/bin/perl_lib -I C:/intelfpga_lite/18.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/18.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/18.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2 -- C:/intelfpga_lite/18.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2/generate_rtl.pl --name=imem_onchip_memory2_0 --dir=C:/Users/Daire/AppData/Local/Temp/alt8736_8284560888224303420.dir/0002_onchip_memory2_0_gen/ --quartus_dir=C:/intelfpga_lite/18.1/quartus --verilog --config=C:/Users/Daire/AppData/Local/Temp/alt8736_8284560888224303420.dir/0002_onchip_memory2_0_gen//imem_onchip_memory2_0_component_configuration.pl  --do_build_sim=0  ]
+Info: onchip_memory2_0: Done RTL generation for module 'imem_onchip_memory2_0'
+Info: onchip_memory2_0: "imem" instantiated altera_avalon_onchip_memory2 "onchip_memory2_0"
+Info: rst_controller: "imem" instantiated altera_reset_controller "rst_controller"
+Info: imem: Done "imem" with 3 modules, 6 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

@@ -13,7 +13,8 @@ module reg32Blk
 		input                regStr,
 		input  [D_WIDTH-1:0] WBDat,
 		output [D_WIDTH-1:0] rs1Out, 
-		output [D_WIDTH-1:0] rs2Out		
+		output [D_WIDTH-1:0] rs2Out,
+		output               outputValid
 	
 	);
 
