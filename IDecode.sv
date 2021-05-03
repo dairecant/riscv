@@ -5,7 +5,7 @@ module IDecode
 	(
 		input  logic 					clk,
 		input  logic 					rst_n,
-		input  logic               loadInstr,
+		input  logic               go,
 		input  logic [I_WIDTH-1:0] instruction,
 		output logic [6:0]		   opcode,
 		output logic [4:0]		   rd,
@@ -16,19 +16,12 @@ module IDecode
 		output logic [4:0]		   rs2,
 		output logic [19:0]		   imm,
 		output logic               ALUinstr,
-		output logic               branchValid,
-		output logic               memWr,
-		output logic               memRd,
-		output logic               regLd,
-		output logic               regStr		
+		output logic               branchInstr,
+		output logic               loadInstr,
+		output logic               storeInstr	
 	);
 	
-	parameter	R_TYPE  = 7'b0110011; 
-	parameter	I_TYPE  = 7'b0010011; 
-	parameter	S_TYPE  = 7'b0100011; 
-	parameter	B_TYPE  = 7'b1100011; 
-	parameter	U_TYPE  = 7'b0110011; 
-	parameter	J_TYPE  = 7'b0110011;
+
 	
 	
 	logic [I_WIDTH-1:0] instr_d, instr_q;
@@ -44,7 +37,7 @@ module IDecode
 		end
 		else
 		begin
-			instr_q <= (loadInstr)? instr_d : instr_q;
+			instr_q <= (go)? instr_d : instr_q;
 		end
 	end
 	
@@ -52,7 +45,10 @@ module IDecode
 	
 	
 	//Opcode decode
-	logic r_type,i_type,s_type,b_type_u_tpe,j_type;
+	
+	assign opcode  = (opcodeValid)? instr_q[6:0] : 'd0;
+
+		
 	always_comb
 	begin
 		case(instr_q[6:0])
@@ -61,33 +57,38 @@ module IDecode
 		endcase	
 	end
 	 
-	assign opcode  = (opcodeValid)? instr_q[6:0] : 'd0;
-	assign r_type  = instr_q[6:0] == R_TYPE;
-	assign i_type  = instr_q[6:0] == I_TYPE;
-	assign s_type  = instr_q[6:0] == S_TYPE;
-	assign b_type  = instr_q[6:0] == B_TYPE;
-	assign u_type  = instr_q[6:0] == U_TYPE;
-	assign j_type  = instr_q[6:0] == J_TYPE;
+	
+	
+	assign ALUinstr    =  (instr_q[6:0]==ALUTypeI  ) |  (instr_q[6:0]==ALUTypeR);
+	assign loadInstr   =  (instr_q[6:0]==loadType  ); 
+	assign storeInstr  =  (instr_q[6:0]==storeType ); 
+	assign branchInstr =   instr_q[6:0]==branchType ;
+	
+	bit R_TYPE,I_TYPE,S_TYPE,B_TYPE,U_TYPE,J_TYPE;
+	
+	assign	R_TYPE  = (instr_q[6:0]==ALUTypeR); 
+	assign	I_TYPE  = (instr_q[6:0]==ALUTypeI) | loadInstr | (instr_q[6:0]==7'b1100111) ; 
+	assign	S_TYPE  = storeInstr; 
+	assign	B_TYPE  = branchInstr; 
+	assign	U_TYPE  = (instr_q[6:0]==7'b0x100111); 
+	assign	J_TYPE  = (instr_q[6:0]==7'b1101111);	
 	
 	
 	//RD Decode
-	assign rd = (~(s_type | b_type))? instr_q[11:7] : 'd0;
+	assign rd = (~(S_TYPE | B_TYPE))? instr_q[11:7] : 'd0;
 	
 	
 	//f3 Decode
 	logic  f3Avail;
 	
-	assign f3Avail =   opcodeValid & (r_type | i_type | s_type | b_type); 
-	assign f3      =  (opcodeValid & 
-	
-	
-	(r_type | i_type | s_type | b_type) )? instr_q[14:12]   : 'd0; //R,I,S,B type
+	assign f3Avail =   (R_TYPE | I_TYPE | S_TYPE | B_TYPE); 
+	assign f3      =   (f3Avail) ? instr_q[14:12]   : 'd0; //R,I,S,B type
 	
 
 
 	//f7 Decode 
 	logic  f7Avail;
-	assign f7Avail = r_type;
+	assign f7Avail = R_TYPE;
 	assign f7      = (f7Avail)? instr_q[31:25] : 'd0;
 	
 	//RS1 Decode
@@ -98,7 +99,7 @@ module IDecode
 	//RS2 Decode
 	logic  rs2Avail;
 	
-	assign rs2Avail = opcodeValid & (r_type | s_type | b_type);
+	assign rs2Avail = opcodeValid & (R_TYPE | S_TYPE | B_TYPE);
 	assign rs2      = (rs2Avail)?           instr_q[24:20] : 'd0;  //R,S,B
 	
 	
@@ -107,34 +108,34 @@ module IDecode
 	logic imm12,imm20;
 	always_comb
 	begin
-		case (instr_q)
-			I_TYPE:
+		case (instr_q[6:0])
+			ALUTypeR:
 						begin
 							imm12 = 1'b1;
 							imm20 = 1'b0;
 							imm   = {'0,{instr_q[31:20]}};
 						end
-			S_TYPE:
+			storeType:
 						begin
 							imm12 = 1'b1;
 							imm20 = 1'b0;
 							imm   = {'0,instr_q[31:25],instr_q[11:7]};
 						end			
-			B_TYPE:
+			branchType:
 						begin
 							imm12 = 1'b1;
 							imm20 = 1'b0;
 							
 							imm   = {'0,instr_q[31],instr_q[7],instr_q[30:25],instr_q[11:8]};
 						end	
-			U_TYPE:
+			7'b0x100111: //u type
 						begin
 							imm12 = 1'b0;
 							imm20 = 1'b1;
 							imm   = {instr_q[31:12]};
 						
 						end
-			J_TYPE:
+			7'b1101111: //j type
 						begin			
 							imm12 = 1'b0;
 							imm20 = 1'b1;

@@ -10,7 +10,8 @@ module riscv_core
 		input rst_n,
 		input en,
 		output riscVDat instruction,
-		output PC pc1
+		output PC pc1,
+		output bootOK
 	
 	);
 
@@ -23,7 +24,7 @@ rsAdr     [4:0] rs1,rs2;
 func3	    [4:0] f3;
 func7	    [4:0] f7;
 immediate [4:0] imm;
-logic 	 [4:0] ALUinstr,branchValid,regLd,regStr,raSelPC,rbSelImm;
+logic 	 [4:0] ALUinstr,branchValid,regLd,regStr,raSelPC,rbSelImm,loadInstr,storeInstr;
 reg en_del,enPulse;
 
 always @ (posedge clk or negedge rst_n)
@@ -63,11 +64,11 @@ PCCU		pCounter(
 				.PC(pc)
 );
 
-/*
+
 IDecode  dec(
 					.clk(clk),
 					.rst_n(rst_n),
-					.loadInstr(enPulse),
+					.go(enPulse),
 					.instruction(instruction),
 					.opcode(opcode),
 					.rd(rd),
@@ -77,11 +78,9 @@ IDecode  dec(
 					.rs2(rs2),
 					.imm(imm),
 					.ALUinstr(ALUinstr),
-					.branchValid(branchValid),
-					.memWr(memWr),
-					.memRd(memRd),
-					.regLd(regLd),
-					.regStr(regStr)	
+					.branchInstr(branchValid),
+					.loadInstr(loadInstr),
+					.storeInstr(storeInstr)
 );
 
 
@@ -117,6 +116,6 @@ assign WBDat = aluOut;
 always @ (posedge clk or negedge rst_n)
 begin
 	bootOK <= 	ALUinstr | branchValid | regLd | regStr ;
-end*/
+end
 assign pc1 = pc[0];
 endmodule
