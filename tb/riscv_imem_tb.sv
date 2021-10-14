@@ -6,14 +6,15 @@ parameter PERIOD          = (1/FREQ)/0.000000001;
 parameter CLK_HALF_PERIOD = PERIOD/2;
 
 parameter INIT_FILE       = "instr_mem_init1.mif";
-logic clk_tb,rst_n_tb,en_n_tb;
+logic clk_tb,rst_n_tb,en_n_tb,valid_tb;
 riscVDat instruction_tb,PC_tb;
 
 riscv_core dut(	
 						.clk(clk_tb),
 						.rst_n(rst_n_tb),
 						.instruction(instruction_tb),
-						.pc1(PC_tb)
+						.pc1(PC_tb),
+						.valid(valid_tb)
 
 					);
 

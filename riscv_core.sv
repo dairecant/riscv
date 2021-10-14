@@ -1,3 +1,4 @@
+//import riscv_pkg::*;
 module riscv_core
 
 #(		parameter I_WIDTH=32,
@@ -9,21 +10,21 @@ module riscv_core
 		input clk,
 		input rst_n,
 		input en,
-		output riscVDat instruction,
+		output riscVDat,
 		output PC pc1,
 		output bootOK
 	
 	);
 
 
-riscVDat  [4:0] /*instruction,*/branchVal,raIn,rbIn,rs1Dat,rs2Dat,WBDat;
-PC        [4:0] pc;
-Opcode    [4:0] opcode;
-rdAdr     [4:0] rd;
-rsAdr     [4:0] rs1,rs2;
-func3	    [4:0] f3;
-func7	    [4:0] f7;
-immediate [4:0] imm;
+riscv_pkg::riscVDat  [4:0] /*instr,*/branchVal,raIn,rbIn,rs1Dat,rs2Dat,WBDat;
+riscv_pkg::PC        [4:0] pc;
+riscv_pkg::Opcode    [4:0] opcode;
+riscv_pkg::rdAdr     [4:0] rd;
+riscv_pkg::rsAdr     [4:0] rs1,rs2;
+riscv_pkg::func3	    [4:0] f3;
+riscv_pkg::func7	    [4:0] f7;
+riscv_pkg::immediate [4:0] imm;
 logic 	 [4:0] ALUinstr,branchValid,regLd,regStr,raSelPC,rbSelImm,loadInstr,storeInstr;
 reg en_del,enPulse;
 
@@ -37,7 +38,7 @@ begin
 	else
 		begin
 		en_del  <= en;
-		enPulse <= (~en & en_del); // instruction stepping
+		enPulse <= (~en & en_del); // instr stepping
 		end
 end
 
@@ -50,9 +51,41 @@ IM		  	instr_mem(
 				   .go(enPulse),		
 					.we('0),
 					.wdata('0),
-					.instruction(instruction)
+					.instr(instr)
 );
 
+DM		  	data_mem
+	(
+		.clk(clk),
+		.byteEn(),
+		.go(enPulse),
+		.we(writeStore),
+      .imm(imm),
+		.rs1(rs1),
+		.wdata(writeSrc),
+		.loadData(loadData)
+	);
+
+IDecode  dec(
+					.clk(clk),
+					.rst_n(rst_n),
+					.go(enPulse),
+					.instr(instr),
+					.opcode(opcode),
+					.rd(rd),
+					.f3(f3),
+					.f7(f7),
+					.rs1(rs1),
+					.rs2(rs2),
+					.imm(imm),
+					.offset(),
+					.base(),
+					.loadSz(),
+					.ALUinstr(ALUinstr),
+					.branchInstr(branchValid),
+					.loadInstr(loadInstr),
+					.storeInstr(storeInstr)
+);
 
 
 PCCU		pCounter(
@@ -65,23 +98,7 @@ PCCU		pCounter(
 );
 
 
-IDecode  dec(
-					.clk(clk),
-					.rst_n(rst_n),
-					.go(enPulse),
-					.instruction(instruction),
-					.opcode(opcode),
-					.rd(rd),
-					.f3(f3),
-					.f7(f7),
-					.rs1(rs1),
-					.rs2(rs2),
-					.imm(imm),
-					.ALUinstr(ALUinstr),
-					.branchInstr(branchValid),
-					.loadInstr(loadInstr),
-					.storeInstr(storeInstr)
-);
+
 
 
 reg32Blk cache(

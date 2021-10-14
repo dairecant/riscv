@@ -23,7 +23,6 @@ module ALU
 	
 	//I Type
 	parameter ALU_I_OP  = 7'b0010011;
-	enum bit[2:0] {ADDI,SLLI,SLTI,SLTIU,XORI,SRLI_SRAI,ORI,ANDI} alu_i_ops;    
 
 
 	
