@@ -24,7 +24,10 @@ module reg32Blk
 	begin: regStore
 		if(~rst_n)
 		begin
-			regBlk <= '0;
+			for(integer i=0; i < 32; i= i+1)
+			begin
+				regBlk[i] <= 'd0;
+			end
 		end
 		else 
 		begin
