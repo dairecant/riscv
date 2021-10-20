@@ -1,4 +1,7 @@
-./db/*
-.incremental_db/*
-./.qsys_edit/*
-./*.bak
+db/*
+incremental_db/*
+*.sopcinfo
+./output_files/*
+.qsys_edit/*
+*.bak
+*.qsf
