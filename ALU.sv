@@ -8,7 +8,7 @@ module ALU
 	input 						  rst_n,
 	input 						  opcodeValid,
 	input  [7-1:0] 			  opcode,
-	input  [4-1:0] 			  f3,
+	input  [3-1:0] 			  f3,
 	input  [12-1:0]			  imm,
    input [ALU_WIDTH-1:0]	  rs1,
    input [ALU_WIDTH-1:0]	  rs2,		
@@ -191,6 +191,8 @@ module ALU
 
 always_comb
 begin
+	alu_result_d = '0;
+
 	if (opcode==ALU_I_OP)
 	begin
 		case(f3)
@@ -237,7 +239,7 @@ begin
 							begin
 								if(f7[5])
 								begin
-									alu_result_d = rs2 - rs1; //overflow ignored in rv32i
+									alu_result_d = rs1 - rs2; //overflow ignored in rv32i
 								end
 								else
 								begin
@@ -245,7 +247,7 @@ begin
 								end
 							
 							end
-						SLL:     alu_result_d = rs1 << rs2;
+						SLL:     alu_result_d = rs1 << rs2[4:0];
 						SLT:     alu_result_d = ($signed(rs2) > rs1)? 1 : 0;
 						SLTU:    alu_result_d = (rs2 > rs1)? 1 : 0;
 						XOR:     alu_result_d = rs1 ^ rs2;
@@ -253,11 +255,11 @@ begin
 								begin
 									if(f7[5])
 									begin
-										alu_result_d = rs1 >>> rs2; //arithmetic right shift	
+										alu_result_d = rs1 >>> rs2[4:0]; //arithmetic right shift	
 									end
 									else
 									begin
-										alu_result_d = rs1 >> rs2; //logical right shift					
+										alu_result_d = rs1 >> rs2[4:0]; //logical right shift					
 									end
 								end
 						OR:      alu_result_d = rs1 | rs2;
@@ -266,10 +268,7 @@ begin
 					endcase
 			end			
 		end
-		else
-		begin
-			alu_result_d = '0;
-		end
+
 	end
 
 
